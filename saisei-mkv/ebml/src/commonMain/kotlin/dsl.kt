@@ -1,15 +1,17 @@
 package saisei.io.format.ebml
 
 import naibu.ext.into
-import naibu.io.memory.DefaultAllocator
-import naibu.io.memory.Memory
 import saisei.io.format.ebml.element.EBMLException
 import saisei.io.format.ebml.element.Element
 import saisei.io.format.ebml.element.ElementDeclaration
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 
-inline infix fun <reified T : Element> Element.into(declaration: ElementDeclaration<T>): T? {
+inline infix fun <reified T : Element> Element.into(declaration: ElementDeclaration<T>): T {
+    return intoOrNull(declaration) ?: throw EBMLException.UnexpectedElement(header.id, declaration.id)
+}
+
+inline infix fun <reified T : Element> Element.intoOrNull(declaration: ElementDeclaration<T>): T? {
     return if (this matches declaration) into<T>() else null
 }
 

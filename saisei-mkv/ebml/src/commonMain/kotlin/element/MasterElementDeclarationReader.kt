@@ -8,7 +8,6 @@ import kotlinx.datetime.Instant
 import naibu.cio.stream.read.SeekableReadStream
 import naibu.cio.stream.read.readDouble
 import naibu.cio.stream.read.readFloat
-import naibu.common.Closeable
 import naibu.io.exception.EOFException
 import naibu.io.memory.DefaultAllocator
 import naibu.io.memory.Memory
@@ -24,14 +23,16 @@ data class MasterElementDeclarationReader(
     override val header: ElementHeader,
     val stream: SeekableReadStream,
     val parent: MasterElementDeclarationReader? = null,
-) : MasterElementReader, Closeable {
+) : MasterElementReader {
+    private val start = stream.position
+
     internal val mutableClosed = atomic(false)
     internal val mutex = Mutex()
     internal val mutableChildren = mutableListOf<Element>()
-    internal var position: Long = 0
-
     internal var lastElement: ElementHeader? = null
     internal var lastElementRead: Boolean = false
+
+    val position: Long get() = stream.position - start
 
     override val remaining
         get() = header.dataSize - position
@@ -63,17 +64,8 @@ data class MasterElementDeclarationReader(
         }
 
         mutex.withLock {
-            if (!lastElementRead) lastElement?.let { last ->
-                val remaining = last.calculateRemaining(stream.position)
-                position += if (remaining > 0) {
-                    /* if the last element was not read entirely then skip it. */
-                    stream.discardFully(remaining)
-                    remaining
-                } else {
-                    last.dataSize
-                }
-            }
-
+            /* if the last element was not read entirely then skip it. */
+            lastElement?.skip(stream)
             lastElement = null
             lastElementRead = false
 
@@ -85,12 +77,10 @@ data class MasterElementDeclarationReader(
 
             /* read the header of the next child. */
             val (hdr, child) = readNextChildHeader()
-            position += hdr.headerSize
 
             /* if the header returns an element that is unknown to this master element just skip it. */
             if (child == null) {
                 stream.discardFully(hdr.dataSize)
-                position += hdr.dataSize
                 return null
             }
 
@@ -132,7 +122,7 @@ data class MasterElementDeclarationReader(
 
                 val pos = reader.stream.position
                 value = readInner()
-                reader.position += reader.stream.position - pos
+//                reader.position += reader.stream.position - pos
                 reader.lastElementRead = true
 
                 return requireNotNull(value) {
@@ -260,7 +250,11 @@ data class MasterElementDeclarationReader(
             get() = !::childrenCache.isInitialized
 
         override fun reader(): MasterElementReader {
-            TODO("Not yet implemented")
+            if (::childrenCache.isInitialized) {
+                return MasterElement.Actual(header, childrenCache).reader()
+            }
+
+            return MasterElementDeclarationReader(declaration, header, reader.stream)
         }
 
         override suspend fun <T> consume(block: suspend MasterElementReader.() -> T): T = reader.mutex.withLock {
@@ -273,16 +267,7 @@ data class MasterElementDeclarationReader(
                 r.block()
             } finally {
                 r.close()
-
-                val remaining = header.dataSize - r.position
-                if (remaining > 0) {
-                    reader.stream.discardFully(remaining)
-                }
-
-                //
                 childrenCache = r.children
-                reader.position += header.dataSize
-                reader.lastElementRead = true
             }
         }
 
@@ -291,11 +276,7 @@ data class MasterElementDeclarationReader(
     }
 
     override suspend fun skipLastChild() {
-        lastElement?.let { last ->
-            last.skipDataFully(stream)
-            position += last.dataSize
-            lastElementRead = true
-        }
+        lastElement?.skip(stream)
     }
 
     override fun self(): MasterElement = MasterElement.Actual(header, children)

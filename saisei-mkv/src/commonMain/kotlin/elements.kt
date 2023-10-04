@@ -1,8 +1,6 @@
 package saisei.container.mkv.element
 
 import naibu.io.memory.Memory
-import naibu.io.slice.asSlice
-import naibu.io.slice.contentToString
 import saisei.io.format.ebml.EBMLIntegerType
 import saisei.io.format.ebml.EbmlID
 import saisei.io.format.ebml.element.ElementDeclaration

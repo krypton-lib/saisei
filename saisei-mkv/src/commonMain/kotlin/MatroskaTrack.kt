@@ -2,6 +2,7 @@ package saisei.container.mkv
 
 import naibu.io.memory.Memory
 import saisei.container.mkv.element.Segment
+import kotlin.time.Duration
 
 data class MatroskaTrack(
     /**
@@ -11,7 +12,7 @@ data class MatroskaTrack(
     /**
      * The track number as used in the Block Header.
      */
-    val num: Long,
+    val number: Long,
     /**
      * The type of this Track.
      */
@@ -38,7 +39,7 @@ data class MatroskaTrack(
          * will be actually played. The value **SHOULD** be small so the muxing of tracks with the same actual timestamp
          * are in the same Cluster.
          */
-        val delay: Long?,
+        val delay: Duration,
         /**
          * Private data only known to the codec.
          */

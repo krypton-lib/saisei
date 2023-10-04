@@ -1,10 +1,7 @@
 package saisei.container.mkv
 
 /**
- * Matroska file cue point. Provides the offsets at a specific timecode for each track
  *
- * @param timecode            Timecode using the file timescale
- * @param trackClusterOffsets Absolute offset to the cluster
  */
 data class MatroskaCuePoint(
     /**
@@ -12,11 +9,18 @@ data class MatroskaCuePoint(
      */
     val timecode: Long,
     /**
-     * The ID of the track this cue point belongs to.
+     * Contain positions for different tracks corresponding to the timestamp.
      */
-    val trackId: Long,
-    /**
-     * Absolute offset to the cluster
-     */
-    val trackClusterOffsets: LongArray,
-)
+    val offsets: List<Offset>,
+) {
+    data class Offset(
+        /**
+         * The track for which a position is given.
+         */
+        val trackNumber: Long,
+        /**
+         * The Segment Position (segment-position) of the Cluster containing the associated Block.
+         */
+        val trackClusterOffset: Long,
+    )
+}

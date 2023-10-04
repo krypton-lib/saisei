@@ -59,7 +59,7 @@ internal inline fun readEbmlInteger(type: EBMLIntegerType? = null, read: () -> B
 
 private fun getCodeLength(firstByte: Byte): Int {
     val codeLength = firstByte.countLeadingZeroBits() + 1
-    check(codeLength <= 8) {
+    require(codeLength <= 8) {
         "More than 8 bytes for length, probably invalid data"
     }
 

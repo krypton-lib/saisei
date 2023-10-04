@@ -1,5 +1,11 @@
 package saisei.container.mkv
 
+import naibu.cio.stream.read.SeekableReadStream
+import naibu.ext.into
+import saisei.container.mkv.element.Segment
+import saisei.io.format.ebml.element.consumeFully
+import kotlin.jvm.JvmInline
+
 /**
  * Information on Cue Points.
  */
@@ -8,7 +14,18 @@ sealed interface MatroskaCues {
      * The [MatroskaCuePoint]s that were found.
      */
     @JvmInline
-    value class Realized(val cues: List<MatroskaCuePoint>) : MatroskaCues
+    value class Found(val value: List<MatroskaCuePoint>) : MatroskaCues {
+        /**
+         * Finds the offset of the closest timecode to [timecode].
+         *
+         * @param trackNumber The track number
+         * @param timecode    The timecode
+         */
+        fun findCluster(trackNumber: Long, timecode: Long): Long? = value.find { it.timecode > timecode }
+            ?.offsets
+            ?.find { it.trackNumber == trackNumber }
+            ?.trackClusterOffset
+    }
 
     /**
      * The position of the [Segment.Cues] element, occurs whenever a [Segment.Cluster] was found before [Segment.Cues]
@@ -20,4 +37,28 @@ sealed interface MatroskaCues {
      * No [MatroskaCuePoint]s were found.
      */
     data object None : MatroskaCues
+
+    companion object {
+        /**
+         * Attempts to find [cues][Found] inside of this segment, if only a reference to their position is known then
+         * the stream will be seeked to it, so they can be read.
+         *
+         * @param stream The stream to use if only a reference is known.
+         * @return The cues that were found, or `null` if they are not present.
+         */
+        suspend fun MatroskaSegment.findCues(stream: SeekableReadStream): Found? =
+            when (cues) {
+                None -> null
+                is Found -> cues
+                is Reference -> {
+                    // seek to the cue point.
+                    stream.seek(header.dataPosition + cues.segmentPosition)
+
+                    // read the cues element
+                    Segment.Cues.consumeFully(stream)
+                        .readMatroskaCues()
+                        .into<Found>()
+                }
+            }
+    }
 }

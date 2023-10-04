@@ -10,7 +10,7 @@ data class ElementHeader(
     /**
      * The byte position of this element in the stream.
      */
-    val headerPosition: Long,
+    val position: Long,
     /**
      * The element's ID.
      */
@@ -27,7 +27,7 @@ data class ElementHeader(
     /**
      * The position of this element's data.
      */
-    val dataPosition: Long get() = headerPosition + headerSize
+    val dataPosition: Long get() = position + headerSize
 
     /**
      *
@@ -35,21 +35,21 @@ data class ElementHeader(
     val size: Long get() = headerSize + dataSize
 
     suspend fun jumpTo(stream: SeekableReadStream) {
-        stream.seek(headerPosition)
+        stream.seek(position)
     }
 
     suspend fun jumpToData(stream: SeekableReadStream) {
         stream.seek(dataPosition)
     }
 
-    suspend fun skipDataFully(stream: SeekableReadStream) {
-        stream.discardFully(dataSize)
+    suspend fun skip(stream: SeekableReadStream) {
+        stream.discardFully(calculateRemaining(stream.position))
     }
 
     /**
      *
      */
-    fun calculateRemaining(currentPos: Long) = headerPosition + headerSize + dataSize - currentPos
+    fun calculateRemaining(currentPos: Long) = position + headerSize + dataSize - currentPos
 
     companion object {
         suspend fun read(stream: SeekableReadStream): ElementHeader {

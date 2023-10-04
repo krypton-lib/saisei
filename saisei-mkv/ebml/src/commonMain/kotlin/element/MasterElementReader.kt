@@ -10,6 +10,8 @@ interface MasterElementReader : Closeable {
      */
     val remaining: Long
 
+    val hasRemaining: Boolean get() = remaining > 0
+
     /**
      * Whether this reader has been closed.
      */

@@ -6,10 +6,9 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.mapNotNull
 import naibu.cio.stream.read.SeekableReadStream
 import naibu.common.use
-import naibu.ext.print
 import naibu.io.exception.EOFException
 import saisei.io.format.ebml.EbmlID
-import saisei.io.format.ebml.into
+import saisei.io.format.ebml.intoOrNull
 import saisei.io.format.ebml.matches
 
 /**
@@ -33,7 +32,7 @@ fun ElementDeclaration.MASTER.reader(stream: SeekableReadStream, header: Element
 @ExperimentalSaiseiApi
 inline fun <reified T : Element> Flow<Element>.filterIsElement(declaration: ElementDeclaration<T>) = this
     .filter { it matches declaration }
-    .mapNotNull { it.into(declaration) }
+    .mapNotNull { it.intoOrNull(declaration) }
 
 @ExperimentalSaiseiApi
 suspend fun MasterElement.consumeAsFlow(): Flow<Element> = flow {
@@ -143,7 +142,7 @@ suspend inline fun <T> ElementDeclaration.MASTER.consume(
  *
  */
 inline fun <reified T : Element> MasterElement.childOrNull(declaration: ElementDeclaration<T>) =
-    children.find { it matches declaration }?.into(declaration)
+    children.find { it matches declaration }?.intoOrNull(declaration)
 
 /**
  *
@@ -152,4 +151,4 @@ inline fun <reified T : Element> MasterElement.child(declaration: ElementDeclara
     requireNotNull(childOrNull(declaration)) { "Unable to find child: ${declaration.id}" }
 
 inline fun <reified T : Element> MasterElement.children(declaration: ElementDeclaration<T>): List<T> =
-    children.filter { it matches declaration }.mapNotNull { it.into(declaration) }
+    children.filter { it matches declaration }.mapNotNull { it.intoOrNull(declaration) }

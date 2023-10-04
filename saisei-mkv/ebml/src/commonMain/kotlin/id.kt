@@ -28,6 +28,10 @@ sealed interface EbmlID {
         override fun toString(): String = if (name.isBlank()) "$code" else "$code ($name)" // "EbmlID(code=$code, name=$name)"
     }
 
+    infix fun notMatches(other: EbmlID): Boolean {
+        return other.code != code
+    }
+
     infix fun matches(other: EbmlID): Boolean {
         return other.code == code
     }

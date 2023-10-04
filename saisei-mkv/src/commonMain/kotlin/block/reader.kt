@@ -3,7 +3,6 @@ package saisei.container.mkv.block
 import naibu.cio.stream.read.SeekableReadStream
 import naibu.cio.stream.read.readAsInt
 import naibu.cio.stream.read.readShort
-import naibu.io.memory.Memory
 import naibu.math.toIntSafe
 import saisei.io.format.ebml.EBMLIntegerType
 import saisei.io.format.ebml.element.BinaryElement
@@ -28,22 +27,6 @@ suspend fun BinaryElement.readBlock(stream: SeekableReadStream): MatroskaBlock {
     )
 
     return MatroskaBlock.Immutable(trackNumber, timecode, isKeyFrame, frameSizes.size / 2, frameSizes)
-}
-
-suspend fun MatroskaBlock.readFrame(stream: SeekableReadStream, buffer: Memory, index: Int): LongRange {
-    require(index < frameCount) {
-        "Frame Index is out of Bounds."
-    }
-
-    val frameSize = frameSizes[index]
-    require(frameSize <= buffer.size) {
-        "Provided buffer is not large enough for Frame #$index ($frameSize > ${buffer.size})"
-    }
-
-    val range = 0L..<frameSize
-    stream.readFully(buffer, range)
-
-    return range
 }
 
 internal suspend fun BinaryElement.readFrameSizes(stream: SeekableReadStream, laceType: Int): IntArray {
@@ -79,7 +62,7 @@ internal suspend fun BinaryElement.readXiphLaceSizes(stream: SeekableReadStream,
     frameSizes[frameSizes.lastIndex] = remaining.toIntSafe() - sizeTotal
 }
 
-internal suspend fun BinaryElement.readFixedLaceSizes(stream: SeekableReadStream, frameSizes: IntArray) {
+internal fun BinaryElement.readFixedLaceSizes(stream: SeekableReadStream, frameSizes: IntArray) {
     val size = header
         .calculateRemaining(stream.position)
         .toIntSafe()
@@ -90,10 +73,10 @@ internal suspend fun BinaryElement.readFixedLaceSizes(stream: SeekableReadStream
 internal suspend fun BinaryElement.readEbmlLaceSizes(stream: SeekableReadStream, frameSizes: IntArray) {
     frameSizes[0] = stream.readVariableEBMLInteger().toIntSafe()
 
-    val sizeTotal = frameSizes.first()
+    var sizeTotal = frameSizes.first()
     for (i in 1..<frameSizes.lastIndex) {
-        val last = frameSizes[i - 1]
-        frameSizes[i] = last + stream.readVariableEBMLInteger(EBMLIntegerType.LaceSigned).toIntSafe()
+        frameSizes[i] = frameSizes[i - 1] + stream.readVariableEBMLInteger(EBMLIntegerType.LaceSigned).toIntSafe()
+        sizeTotal += frameSizes[i]
     }
 
     frameSizes[frameSizes.lastIndex] = header.calculateRemaining(stream.position).toIntSafe() - sizeTotal
