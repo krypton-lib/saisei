@@ -1,5 +1,12 @@
 package saisei.container.mkv
 
+import saisei.container.mkv.MatroskaCuePoint.Offset.Companion.readMatroskaCuePointOffset
+import saisei.container.mkv.element.Segment
+import saisei.io.format.ebml.element.MasterElement
+import saisei.io.format.ebml.element.child
+import saisei.io.format.ebml.element.children
+import saisei.io.format.ebml.mustBe
+
 /**
  *
  */
@@ -22,5 +29,33 @@ data class MatroskaCuePoint(
          * The Segment Position (segment-position) of the Cluster containing the associated Block.
          */
         val trackClusterOffset: Long,
-    )
+    ) {
+        companion object {
+            /**
+             *
+             */
+            suspend fun MasterElement.readMatroskaCuePointOffset(): Offset {
+                this mustBe Segment.Cues.CuePoint.CueTrackPositions
+
+                return Offset(
+                    child(Segment.Cues.CuePoint.CueTrackPositions.CueTrack).read(),
+                    child(Segment.Cues.CuePoint.CueTrackPositions.CueClusterPosition).read()
+                )
+            }
+        }
+    }
+
+    companion object {
+        /**
+         *
+         */
+        suspend fun MasterElement.readMatroskaCuePoint(): MatroskaCuePoint {
+            this mustBe Segment.Cues.CuePoint
+
+            return MatroskaCuePoint(
+                child(Segment.Cues.CuePoint.CueTime).read(),
+                children(Segment.Cues.CuePoint.CueTrackPositions).map { it.readMatroskaCuePointOffset() }
+            )
+        }
+    }
 }

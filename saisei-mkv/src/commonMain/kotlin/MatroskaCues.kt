@@ -2,8 +2,12 @@ package saisei.container.mkv
 
 import naibu.cio.stream.read.SeekableReadStream
 import naibu.ext.into
+import saisei.container.mkv.MatroskaCuePoint.Companion.readMatroskaCuePoint
 import saisei.container.mkv.element.Segment
+import saisei.io.format.ebml.element.MasterElement
+import saisei.io.format.ebml.element.children
 import saisei.io.format.ebml.element.consumeFully
+import saisei.io.format.ebml.mustBe
 import kotlin.jvm.JvmInline
 
 /**
@@ -39,6 +43,16 @@ sealed interface MatroskaCues {
     data object None : MatroskaCues
 
     companion object {
+        suspend fun MasterElement.readMatroskaCues(): MatroskaCues {
+            this mustBe Segment.Cues
+
+            val cuePoints = consumeFully()
+                .children(Segment.Cues.CuePoint)
+                .map { it.readMatroskaCuePoint() }
+
+            return if (cuePoints.isEmpty()) None else Found(cuePoints)
+        }
+
         /**
          * Attempts to find [cues][Found] inside of this segment, if only a reference to their position is known then
          * the stream will be seeked to it, so they can be read.

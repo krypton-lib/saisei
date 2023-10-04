@@ -1,8 +1,12 @@
 package saisei.container.mkv
 
 import naibu.io.memory.Memory
+import naibu.math.toIntSafe
 import saisei.container.mkv.element.Segment
+import saisei.io.format.ebml.element.*
+import saisei.io.format.ebml.mustBe
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.nanoseconds
 
 data class MatroskaTrack(
     /**
@@ -64,4 +68,46 @@ data class MatroskaTrack(
          */
         val bitDepth: Int?,
     )
+
+    companion object {
+        /*
+         * TODO:
+         * Since Tracks have a decent number of fields maybe it would be better to read only the ones we need?
+         */
+
+        suspend fun MasterElement.readMatroskaTracks(): List<MatroskaTrack> {
+            this mustBe Segment.Tracks
+
+            return consumeFully()
+                .children(Segment.Tracks.TrackEntry)
+                .map { it.readMatroskaTrack() }
+        }
+
+        suspend fun MasterElement.readMatroskaTrack(): MatroskaTrack {
+            this mustBe Segment.Tracks.TrackEntry
+
+            val codec = Codec(
+                child(Segment.Tracks.TrackEntry.CodecID).read(),
+                child(Segment.Tracks.TrackEntry.CodecDelay).read().nanoseconds,
+                childOrNull(Segment.Tracks.TrackEntry.CodecPrivate)?.read()
+            )
+
+            val audio = childOrNull(Segment.Tracks.TrackEntry.Audio)?.let { audio ->
+                Audio(
+                    audio.child(Segment.Tracks.TrackEntry.Audio.SamplingFrequency).read(),
+                    audio.childOrNull(Segment.Tracks.TrackEntry.Audio.OutputSamplingFrequency)?.read(),
+                    audio.child(Segment.Tracks.TrackEntry.Audio.Channels).read().toIntSafe(),
+                    audio.childOrNull(Segment.Tracks.TrackEntry.Audio.BitDepth)?.read()?.toIntSafe(),
+                )
+            }
+
+            return MatroskaTrack(
+                child(Segment.Tracks.TrackEntry.TrackUID).read(),
+                child(Segment.Tracks.TrackEntry.TrackNumber).read(),
+                child(Segment.Tracks.TrackEntry.TrackType).read(),
+                codec,
+                audio
+            )
+        }
+    }
 }
