@@ -6,7 +6,7 @@ import naibu.io.exception.EOFException
 import saisei.container.mkv.MatroskaSegment
 import saisei.container.mkv.element.Segment
 import saisei.io.format.ebml.element.*
-import saisei.io.format.ebml.intoOrNull
+import saisei.io.format.ebml.into
 import saisei.io.format.ebml.matches
 
 fun interface MatroskaBlockConsumer {
@@ -39,17 +39,19 @@ private suspend fun MasterElementReader.readBlocks(
     readUntilEOF { child ->
         when {
             child matches Segment.Cluster.Timestamp ->
-                clusterTimestamp = child.intoOrNull(Segment.Cluster.Timestamp)!!.read()
+                clusterTimestamp = child
+                    .into(Segment.Cluster.Timestamp)
+                    .read()
 
             child matches Segment.Cluster.SimpleBlock -> {
                 val block = child
-                    .intoOrNull(Segment.Cluster.SimpleBlock)!!
+                    .into(Segment.Cluster.SimpleBlock)
                     .readBlock(stream)
 
                 consumer.consume(stream, block, clusterTimestamp + block.timecode)
             }
 
-            child matches Segment.Cluster.BlockGroup -> child.intoOrNull(Segment.Cluster.BlockGroup)!!
+            child matches Segment.Cluster.BlockGroup -> child.into(Segment.Cluster.BlockGroup)
                 .consumeAsFlow()
                 .filterIsElement(Segment.Cluster.BlockGroup.Block)
                 .map { it.readBlock(stream) }

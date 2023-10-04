@@ -10,7 +10,6 @@ import saisei.container.mkv.block.readBlock
 import saisei.container.mkv.element.Segment
 import saisei.io.format.ebml.element.*
 import saisei.io.format.ebml.into
-import saisei.io.format.ebml.intoOrNull
 import saisei.io.format.ebml.matches
 
 // TODO: Discard Padding
@@ -139,7 +138,7 @@ data class MatroskaFrameReader(
 
                     if (el matches Segment.Cluster.BlockGroup.Block) {
                         block = Block(
-                            block = el.intoOrNull(Segment.Cluster.BlockGroup.Block)!!.readBlock(stream),
+                            block = el.into(Segment.Cluster.BlockGroup.Block).readBlock(stream),
                             stream = stream
                         )
 
