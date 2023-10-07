@@ -1,25 +1,25 @@
 package saisei.container.mkv
 
-import naibu.cio.stream.read.SeekableReadStream
 import saisei.container.mkv.element.Segment
 import saisei.io.format.ebml.EBML
 import saisei.io.format.ebml.element.EBMLException
 import saisei.io.format.ebml.element.firstNotNullChildOrNull
 import saisei.io.format.ebml.intoOrNull
+import saisei.io.stream.SeekableReadStream
 
-sealed class MatroskaFileException : Exception {
-    constructor(message: String) : super(message)
+public sealed class MatroskaFileException : Exception {
+    protected constructor(message: String) : super(message)
 
-    constructor(message: String, cause: Throwable?) : super(message, cause)
+    protected constructor(message: String, cause: Throwable?) : super(message, cause)
 
-    class NotPlayable(message: String) : MatroskaFileException(message)
+    public class NotPlayable(message: String) : MatroskaFileException(message)
 
-    class ReadingFailed(message: String, cause: Throwable? = null) : MatroskaFileException(message, cause)
+    public class ReadingFailed(message: String, cause: Throwable? = null) : MatroskaFileException(message, cause)
 
-    class NotMatroska(message: String = "File is not Matroska") : MatroskaFileException(message)
+    public class NotMatroska(message: String = "File is not Matroska") : MatroskaFileException(message)
 }
 
-suspend fun readMatroskaDocType(stream: SeekableReadStream) {
+public suspend fun readMatroskaDocType(stream: SeekableReadStream) {
     val docType = try {
         readDocType(stream)
     } catch (ex: EBMLException.UnexpectedElement) {
@@ -42,16 +42,16 @@ suspend fun readMatroskaDocType(stream: SeekableReadStream) {
  *
  * @param stream The stream to read the segment from.
  */
-suspend fun readMatroskaSegment(stream: SeekableReadStream): MatroskaSegment = try {
+public suspend fun readMatroskaSegment(stream: SeekableReadStream): MatroskaSegment = try {
     MatroskaSegment.read(stream)
 } catch (ex: Throwable) {
     throw MatroskaFileException.ReadingFailed("Failed to read MKV elements", ex)
 }
 
-suspend fun readMatroskaFile(stream: SeekableReadStream): MatroskaSegment {
+public suspend fun readMatroskaFile(stream: SeekableReadStream): MatroskaSegment {
     readMatroskaDocType(stream)
     return readMatroskaSegment(stream)
 }
 
-suspend fun readDocType(stream: SeekableReadStream): String? =
+public suspend fun readDocType(stream: SeekableReadStream): String? =
     EBML.firstNotNullChildOrNull(stream) { it.intoOrNull(EBML.DocType)?.read() }

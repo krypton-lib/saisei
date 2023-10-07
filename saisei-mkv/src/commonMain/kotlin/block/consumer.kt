@@ -1,22 +1,22 @@
 package saisei.container.mkv.block
 
 import kotlinx.coroutines.flow.map
-import naibu.cio.stream.read.SeekableReadStream
-import naibu.io.exception.EOFException
 import saisei.container.mkv.MatroskaSegment
 import saisei.container.mkv.element.Segment
+import saisei.io.exception.EOFException
 import saisei.io.format.ebml.element.*
 import saisei.io.format.ebml.into
 import saisei.io.format.ebml.matches
+import saisei.io.stream.SeekableReadStream
 
-fun interface MatroskaBlockConsumer {
-    suspend fun consume(stream: SeekableReadStream, block: MatroskaBlock, timecode: Long)
+public fun interface MatroskaBlockConsumer {
+    public suspend fun consume(stream: SeekableReadStream, block: MatroskaBlock, timecode: Long)
 }
 
 /**
  *
  */
-suspend fun MatroskaSegment.readBlocks(stream: SeekableReadStream, consumer: MatroskaBlockConsumer) {
+public suspend fun MatroskaSegment.readBlocks(stream: SeekableReadStream, consumer: MatroskaBlockConsumer) {
     while (true) try {
         if (stream.position == firstCluster.header.dataPosition) {
             firstCluster.consume { readBlocks(stream, consumer) }

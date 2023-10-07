@@ -1,7 +1,8 @@
-import org.gradle.kotlin.dsl.*
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 
 plugins {
+    `maven-publish`
+
     kotlin("multiplatform")
 }
 
@@ -13,6 +14,8 @@ version = "1.0-SNAPSHOT"
 @Suppress("OPT_IN_IS_NOT_ENABLED")
 @OptIn(ExperimentalKotlinGradlePluginApi::class)
 kotlin {
+    explicitApi()
+
     targetHierarchy.default {
         common {
             group("native") {
@@ -36,5 +39,14 @@ kotlin {
 
     sourceSets["commonTest"].dependencies {
         implementation(kotlin("test"))
+    }
+}
+
+publishing {
+    repositories {
+        maven("https://maven.dimensional.fun/private") {
+            credentials.username = System.getenv("REPO_ALIAS")
+            credentials.password = System.getenv("REPO_TOKEN")
+        }
     }
 }

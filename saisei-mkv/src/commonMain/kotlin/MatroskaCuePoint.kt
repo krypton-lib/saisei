@@ -10,7 +10,7 @@ import saisei.io.format.ebml.mustBe
 /**
  *
  */
-data class MatroskaCuePoint(
+public data class MatroskaCuePoint(
     /**
      * Timecode using the file timescale
      */
@@ -20,7 +20,7 @@ data class MatroskaCuePoint(
      */
     val offsets: List<Offset>,
 ) {
-    data class Offset(
+    public data class Offset(
         /**
          * The track for which a position is given.
          */
@@ -30,11 +30,11 @@ data class MatroskaCuePoint(
          */
         val trackClusterOffset: Long,
     ) {
-        companion object {
+        public companion object {
             /**
              *
              */
-            suspend fun MasterElement.readMatroskaCuePointOffset(): Offset {
+            public suspend fun MasterElement.readMatroskaCuePointOffset(): Offset {
                 this mustBe Segment.Cues.CuePoint.CueTrackPositions
 
                 return Offset(
@@ -45,11 +45,11 @@ data class MatroskaCuePoint(
         }
     }
 
-    companion object {
+    public companion object {
         /**
          *
          */
-        suspend fun MasterElement.readMatroskaCuePoint(): MatroskaCuePoint {
+        public suspend fun MasterElement.readMatroskaCuePoint(): MatroskaCuePoint {
             this mustBe Segment.Cues.CuePoint
 
             return MatroskaCuePoint(

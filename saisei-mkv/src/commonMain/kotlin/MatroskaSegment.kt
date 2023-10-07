@@ -1,6 +1,5 @@
 package saisei.container.mkv
 
-import naibu.cio.stream.read.SeekableReadStream
 import saisei.container.mkv.MatroskaCues.Companion.readMatroskaCues
 import saisei.container.mkv.MatroskaTag.Companion.readTags
 import saisei.container.mkv.MatroskaTrack.Companion.readMatroskaTracks
@@ -9,9 +8,10 @@ import saisei.io.format.ebml.element.*
 import saisei.io.format.ebml.into
 import saisei.io.format.ebml.intoOrNull
 import saisei.io.format.ebml.matches
+import saisei.io.stream.SeekableReadStream
 import kotlin.time.Duration
 
-data class MatroskaSegment(
+public data class MatroskaSegment(
     /**
      * The header of this element.
      */
@@ -37,9 +37,9 @@ data class MatroskaSegment(
      */
     val firstCluster: MasterElement,
 ) {
-    fun convertTimecodeToDuration(timecode: Long): Duration = ticksToDuration(info.timestampScale, timecode)
+    public fun convertTimecodeToDuration(timecode: Long): Duration = ticksToDuration(info.timestampScale, timecode)
 
-    data class Info(
+    public data class Info(
         /**
          * Base unit for Segment Ticks and Track Ticks, in nanoseconds. A TimestampScale value of 1000000 means scaled
          * timestamps in the Segment are expressed in milliseconds; see timestamps on how to interpret timestamps.
@@ -51,8 +51,8 @@ data class MatroskaSegment(
         val duration: Duration?,
     )
 
-    companion object {
-        suspend fun read(stream: SeekableReadStream): MatroskaSegment {
+    public companion object {
+        public suspend fun read(stream: SeekableReadStream): MatroskaSegment {
             /* start reading the first Segment element */
             Segment.consume(stream, discardRemaining = false) {
                 var cues: MatroskaCues = MatroskaCues.None

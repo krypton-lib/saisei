@@ -2,8 +2,8 @@ subprojects {
     if (name !in listOf("test", "codegen")) apply(plugin = "saisei-module")
     apply(plugin = "kotlinx-atomicfu")
 
-    group = "gay.vzt"
-    version = "1.0"
+    group = "gay.vzt.saisei"
+    version = "1.0-rc.1"
 
     repositories {
         maven("https://maven.dimensional.fun/releases")

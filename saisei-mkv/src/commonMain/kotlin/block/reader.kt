@@ -1,14 +1,14 @@
 package saisei.container.mkv.block
 
-import naibu.cio.stream.read.SeekableReadStream
-import naibu.cio.stream.read.readAsInt
-import naibu.cio.stream.read.readShort
 import naibu.math.toIntSafe
 import saisei.io.format.ebml.EBMLIntegerType
 import saisei.io.format.ebml.element.BinaryElement
 import saisei.io.format.ebml.readVariableEBMLInteger
+import saisei.io.stream.SeekableReadStream
+import saisei.io.stream.readAsInt
+import saisei.io.stream.readShort
 
-suspend fun BinaryElement.readBlock(stream: SeekableReadStream): MatroskaBlock {
+public suspend fun BinaryElement.readBlock(stream: SeekableReadStream): MatroskaBlock {
     require(stream.position == header.dataPosition)
 
     val trackNumber = stream.readVariableEBMLInteger()

@@ -1,14 +1,14 @@
 package saisei.container.mkv.block.frame
 
-import naibu.io.memory.Memory
-import naibu.io.slice.MemorySlice
-import naibu.io.slice.get
+import saisei.io.memory.ByteMemory
+import saisei.io.slice.impl.ByteMemorySlice
+import saisei.io.slice.impl.get
 
-data class MatroskaFrame(
+public data class MatroskaFrame(
     /**
      * The buffer that this frame is stored in.
      */
-    val buffer: Memory,
+    val buffer: ByteMemory,
     /**
      * Where in [buffer] this frame resides.
      */
@@ -25,5 +25,5 @@ data class MatroskaFrame(
     /**
      * Returns the slice of data this block occupies.
      */
-    fun asSlice(): MemorySlice = buffer[range]
+    public fun asSlice(): ByteMemorySlice = buffer[range]
 }

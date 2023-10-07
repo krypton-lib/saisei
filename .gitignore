@@ -45,6 +45,4 @@ bin/
 .idea/
 
 ### Testing ###
-*.webm
-*.mkv
-*.mp3
+*.run

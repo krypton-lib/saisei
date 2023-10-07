@@ -1,32 +1,32 @@
 package saisei.container.mkv.block
 
-sealed interface MatroskaBlock {
+public sealed interface MatroskaBlock {
     /**
      * The track number which this block is for
      */
-    val trackNumber: Long
+    public val trackNumber: Long
 
     /**
      * The timecode of this block relative to its cluster
      */
-    val timecode: Long
+    public val timecode: Long
 
     /**
      * Whether this block is a keyframe
      */
-    val isKeyFrame: Boolean
+    public val isKeyFrame: Boolean
 
     /**
      * The number of frames in this block
      */
-    val frameCount: Int
+    public val frameCount: Int
 
     /**
      *
      */
-    val frameSizes: IntArray
+    public val frameSizes: IntArray
 
-    data class Immutable(
+    public data class Immutable(
         override val trackNumber: Long,
         override val timecode: Long,
         override val isKeyFrame: Boolean,

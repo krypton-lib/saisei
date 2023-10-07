@@ -3,9 +3,10 @@ enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 rootProject.name = "saisei-root"
 
 // ebml
-include(":saisei-mkv:codegen")
-include(":saisei-mkv:ebml")
 include(":saisei-mkv")
+
+include(":saisei-ebml:codegen")
+include(":saisei-ebml")
 
 // riff
 include(":saisei-wav:riff")
@@ -17,9 +18,6 @@ include(":saisei-opus")
 //
 include(":saisei-io")
 include(":saisei")
-
-//
-include(":test")
 
 dependencyResolutionManagement {
     versionCatalogs {

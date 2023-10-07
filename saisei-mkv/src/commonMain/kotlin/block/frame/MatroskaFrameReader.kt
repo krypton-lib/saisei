@@ -1,16 +1,17 @@
 package saisei.container.mkv.block.frame
 
-import naibu.cio.stream.read.SeekableReadStream
-import naibu.io.exception.EOFException
-import naibu.io.memory.DefaultAllocator
-import naibu.io.memory.Memory
+import naibu.common.Closeable
+import naibu.common.Resetable
 import saisei.container.mkv.MatroskaSegment
 import saisei.container.mkv.block.MatroskaBlock
 import saisei.container.mkv.block.readBlock
 import saisei.container.mkv.element.Segment
+import saisei.io.exception.EOFException
 import saisei.io.format.ebml.element.*
 import saisei.io.format.ebml.into
 import saisei.io.format.ebml.matches
+import saisei.io.memory.ByteMemory
+import saisei.io.stream.SeekableReadStream
 
 // TODO: Discard Padding
 
@@ -18,13 +19,13 @@ import saisei.io.format.ebml.matches
  *
  */
 @OptIn(ExperimentalSaiseiApi::class)
-data class MatroskaFrameReader(
+public data class MatroskaFrameReader(
     val segment: MatroskaSegment,
     val stream: SeekableReadStream,
-) {
+) : Closeable, Resetable {
     private var state: State = State.Idle
 
-    private val buffer = DefaultAllocator.allocate(8192)
+    private val buffer = ByteMemory.Allocator.allocate(8192)
     private var cluster: MasterElementReader = segment.firstCluster.reader()
     private var clusterTimecode: Long = 0
 
@@ -34,10 +35,15 @@ data class MatroskaFrameReader(
     val isExhausted: Boolean
         get() = state == State.Exhausted
 
-    fun reset() {
+    override fun reset() {
         state = State.Idle
         cluster = segment.firstCluster.reader()
         clusterTimecode = 0
+    }
+
+    override fun close() {
+        buffer.close()
+        stream.close()
     }
 
     /**
@@ -46,7 +52,7 @@ data class MatroskaFrameReader(
      * There is no guarantee that any frame read beforehand will still contain its data as a buffer is shared
      * across reads.
      */
-    suspend fun readFrame(): MatroskaFrame? {
+    public suspend fun readFrame(): MatroskaFrame? {
         if (isExhausted) {
             return null
         }
@@ -90,7 +96,7 @@ data class MatroskaFrameReader(
         }
     }
 
-    suspend fun readCluster() {
+    public suspend fun readCluster() {
         /* if we've exhausted the current cluster then read the next one. */
         while (true) {
             val header = ElementHeader.read(stream)
@@ -112,16 +118,16 @@ data class MatroskaFrameReader(
     private sealed interface State {
         val hasRemaining: Boolean
 
-        suspend fun readFrame(into: Memory): MatroskaFrame
+        suspend fun readFrame(into: ByteMemory): MatroskaFrame
 
         data object Idle : State {
             override val hasRemaining: Boolean get() = false
-            override suspend fun readFrame(into: Memory): MatroskaFrame = TODO()
+            override suspend fun readFrame(into: ByteMemory): MatroskaFrame = TODO()
         }
 
         data object Exhausted : State {
             override val hasRemaining: Boolean get() = false
-            override suspend fun readFrame(into: Memory): MatroskaFrame = TODO()
+            override suspend fun readFrame(into: ByteMemory): MatroskaFrame = TODO()
         }
 
         data class BlockGroup(val element: MasterElement, val stream: SeekableReadStream) : State {
@@ -131,7 +137,7 @@ data class MatroskaFrameReader(
             override val hasRemaining: Boolean
                 get() = reader.remaining > 0
 
-            override suspend fun readFrame(into: Memory): MatroskaFrame {
+            override suspend fun readFrame(into: ByteMemory): MatroskaFrame {
                 if (block?.hasRemaining != false) while (hasRemaining) {
                     val el = reader.readNextChild()
                         ?: continue
@@ -156,7 +162,7 @@ data class MatroskaFrameReader(
             override val hasRemaining: Boolean
                 get() = index < block.frameCount
 
-            override suspend fun readFrame(into: Memory): MatroskaFrame {
+            override suspend fun readFrame(into: ByteMemory): MatroskaFrame {
                 val range = block.readFrame(stream, into, index++)
                 return MatroskaFrame(into, range, block.trackNumber, block.timecode)
             }

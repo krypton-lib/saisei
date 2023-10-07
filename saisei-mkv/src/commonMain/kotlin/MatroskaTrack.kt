@@ -1,14 +1,14 @@
 package saisei.container.mkv
 
-import naibu.io.memory.Memory
 import naibu.math.toIntSafe
 import saisei.container.mkv.element.Segment
 import saisei.io.format.ebml.element.*
 import saisei.io.format.ebml.mustBe
+import saisei.io.memory.ByteMemory
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.nanoseconds
 
-data class MatroskaTrack(
+public data class MatroskaTrack(
     /**
      * A unique ID to identify the Track.
      */
@@ -30,7 +30,7 @@ data class MatroskaTrack(
      */
     val audio: Audio? = null,
 ) {
-    data class Codec(
+    public data class Codec(
         /**
          * An ID corresponding to the codec, see [Matroska codec RFC](https://www.matroska.org/technical/codec_specs.html) for more info.
          */
@@ -47,10 +47,10 @@ data class MatroskaTrack(
         /**
          * Private data only known to the codec.
          */
-        val privateData: Memory?,
+        val privateData: ByteMemory?,
     )
 
-    data class Audio(
+    public data class Audio(
         /**
          * The sampling frequency in Hz.
          */
@@ -69,13 +69,13 @@ data class MatroskaTrack(
         val bitDepth: Int?,
     )
 
-    companion object {
+    public companion object {
         /*
          * TODO:
          * Since Tracks have a decent number of fields maybe it would be better to read only the ones we need?
          */
 
-        suspend fun MasterElement.readMatroskaTracks(): List<MatroskaTrack> {
+        public suspend fun MasterElement.readMatroskaTracks(): List<MatroskaTrack> {
             this mustBe Segment.Tracks
 
             return consumeFully()
@@ -83,7 +83,7 @@ data class MatroskaTrack(
                 .map { it.readMatroskaTrack() }
         }
 
-        suspend fun MasterElement.readMatroskaTrack(): MatroskaTrack {
+        public suspend fun MasterElement.readMatroskaTrack(): MatroskaTrack {
             this mustBe Segment.Tracks.TrackEntry
 
             val codec = Codec(
