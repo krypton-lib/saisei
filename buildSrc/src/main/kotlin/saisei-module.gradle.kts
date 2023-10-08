@@ -24,12 +24,10 @@ kotlin {
         }
     }
 
-    mingwX64 {
-    }
-
+    macosArm64()
+    mingwX64()
     jvm {
         jvmToolchain(19)
-
         testRuns.named("test") {
             executionTask.configure {
                 useJUnitPlatform()

@@ -18,5 +18,3 @@ public class OpusException : Exception {
         this.code = code
     }
 }
-
-public expect fun Int.readException(): OpusException?

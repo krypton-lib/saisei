@@ -1,7 +1,7 @@
 package saisei.io.order
 
 import naibu.platform.Platform
-import naibu.platform.isLittleEndian
+import saisei.io.platform.isLittleEndian
 import saisei.io.slice.ByteSlice
 
 public sealed class ByteOrder {

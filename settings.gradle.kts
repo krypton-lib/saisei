@@ -29,10 +29,7 @@ dependencyResolutionManagement {
 
 fun VersionCatalogBuilder.common() {
     //
-    for (module in listOf("core", "io")) {
-        val name = "naibu-$module"
-        library(name, "naibu.stdlib", name).version("1.4-RC.8")
-    }
+    library("naibu-core", "naibu.stdlib", "naibu-core").version("1.4-RC.8")
 
     library("kotlin-logging", "io.github.oshai", "kotlin-logging").version("5.1.0")
 
@@ -43,6 +40,6 @@ fun VersionCatalogBuilder.common() {
     //
     bundle(
         "common",
-        listOf("logging", "atomicfu", "datetime", "coroutines").map { "kotlin-$it" } + "naibu-core" + "naibu-io"
+        listOf("logging", "atomicfu", "datetime", "coroutines").map { "kotlin-$it" } + "naibu-core"
     )
 }
