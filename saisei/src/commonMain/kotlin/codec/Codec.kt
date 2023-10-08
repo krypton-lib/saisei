@@ -1,7 +1,7 @@
 package saisei.codec
 
 import naibu.platform.Platform
-import naibu.platform.isLittleEndian
+import saisei.io.platform.isLittleEndian
 import saisei.io.slice.ByteSlice
 
 public abstract class Codec(public val name: String, public val isAudio: Boolean) {
