@@ -23,9 +23,13 @@ private val Project.tag
 val Project.libraryVersion
     get() = tag ?: run {
         val snapshotPrefix = when (val branch = git("branch", "--show-current")) {
-            "main" -> providers.gradleProperty("nextPlannedVersion").get()
+            "master" -> providers
+                .gradleProperty("nextPlannedVersion")
+                .getOrElse("1.x")
+
             else -> branch.replace('/', '-')
         }
+
         "$snapshotPrefix-SNAPSHOT"
     }
 
