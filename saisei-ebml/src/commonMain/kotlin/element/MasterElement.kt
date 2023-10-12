@@ -3,6 +3,8 @@ package saisei.io.format.ebml.element
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import saisei.io.exception.EOFException
+import saisei.io.stream.ReadStream
+import saisei.io.stream.SeekableReadStream
 
 public interface MasterElement : Element {
     /**
@@ -16,7 +18,12 @@ public interface MasterElement : Element {
     public val children: List<Element>
 
     @ExperimentalSaiseiApi
+    public suspend fun reader(stream: SeekableReadStream): MasterElementReader = reader()
+
+    @ExperimentalSaiseiApi
     public fun reader(): MasterElementReader
+
+    public suspend fun <T> consume(stream: SeekableReadStream, block: suspend MasterElementReader.() -> T): T = consume(block)
 
     public suspend fun <T> consume(block: suspend MasterElementReader.() -> T): T
 

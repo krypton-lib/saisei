@@ -83,7 +83,7 @@ public data class MatroskaSegment(
                         }
 
                         child matches Segment.Cues -> {
-                            cues = child.into(Segment.Cues).readMatroskaCues()
+                            cues = child.into(Segment.Cues).readMatroskaCues(timestampScale)
                         }
 
                         child matches Segment.Tracks -> {

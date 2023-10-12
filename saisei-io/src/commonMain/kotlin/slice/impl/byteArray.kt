@@ -1,10 +1,7 @@
 package saisei.io.slice.impl
 
+import naibu.ext.*
 import naibu.ext.collections.arraycopy
-import naibu.ext.contains
-import naibu.ext.size
-import naibu.ext.toIntRange
-import naibu.ext.toLongRange
 import naibu.math.toIntSafe
 import saisei.io.memory.ByteMemory
 import saisei.io.slice.*
@@ -51,8 +48,8 @@ public class ByteArraySlice(
     }
 
     override fun get(index: Long, dst: ByteMemory, at: LongRange) {
-        boundsCheck(index..<index + at.size)
-        dst.store(at.first, array, ((range.first + index)..<at.size).toIntRange())
+        val lol = boundsCheck(index..<index + at.size)
+        dst.store(at.first, array, (lol offset range.first).toIntRange())
     }
 
     override fun get(inner: LongRange): ByteArraySlice = ByteArraySlice(array, calculateInnerRange(inner))

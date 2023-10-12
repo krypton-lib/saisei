@@ -9,6 +9,7 @@ import saisei.io.format.ebml.element.consumeFully
 import saisei.io.format.ebml.mustBe
 import saisei.io.stream.SeekableReadStream
 import kotlin.jvm.JvmInline
+import kotlin.time.Duration
 
 /**
  * Information on Cue Points.
@@ -25,7 +26,7 @@ public sealed interface MatroskaCues {
          * @param trackNumber The track number
          * @param timecode    The timecode
          */
-        public fun findCluster(trackNumber: Long, timecode: Long): Long? = value.find { it.timecode > timecode }
+        public fun findCluster(trackNumber: Long, timecode: Duration): Long? = value.find { it.timecode > timecode }
             ?.offsets
             ?.find { it.trackNumber == trackNumber }
             ?.trackClusterOffset
@@ -43,12 +44,12 @@ public sealed interface MatroskaCues {
     public data object None : MatroskaCues
 
     public companion object {
-        public suspend fun MasterElement.readMatroskaCues(): MatroskaCues {
+        public suspend fun MasterElement.readMatroskaCues(timestampScale: Long): MatroskaCues {
             this mustBe Segment.Cues
 
             val cuePoints = consumeFully()
                 .children(Segment.Cues.CuePoint)
-                .map { it.readMatroskaCuePoint() }
+                .map { it.readMatroskaCuePoint(timestampScale) }
 
             return if (cuePoints.isEmpty()) None else Found(cuePoints)
         }
@@ -70,7 +71,7 @@ public sealed interface MatroskaCues {
 
                     // read the cues element
                     Segment.Cues.consumeFully(stream)
-                        .readMatroskaCues()
+                        .readMatroskaCues(info.timestampScale)
                         .into<Found>()
                 }
             }

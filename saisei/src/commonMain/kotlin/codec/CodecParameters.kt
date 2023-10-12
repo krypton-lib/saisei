@@ -1,5 +1,7 @@
 package saisei.codec
 
+// TODO: refactor
+
 public data class CodecParameters(
     /**
      * The sample rate.

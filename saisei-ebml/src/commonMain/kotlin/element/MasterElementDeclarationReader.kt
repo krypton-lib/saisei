@@ -248,14 +248,24 @@ internal data class MasterElementDeclarationReader(
             return MasterElementDeclarationReader(declaration, header, reader.stream)
         }
 
+        override suspend fun reader(stream: SeekableReadStream): MasterElementReader {
+            header.jumpToData(stream)
+            return MasterElementDeclarationReader(declaration, header, stream)
+        }
+
         override suspend fun <T> consume(block: suspend MasterElementReader.() -> T): T = reader.mutex.withLock {
             if (::childrenCache.isInitialized) {
-                return MasterElement.Actual(header, childrenCache).consume(block)
+                MasterElement.Actual(header, childrenCache).consume(block)
+            } else {
+                consume(reader.stream, block)
             }
+        }
 
-            val r = MasterElementDeclarationReader(declaration, header, reader.stream)
+        override suspend fun <T> consume(stream: SeekableReadStream, block: suspend MasterElementReader.() -> T): T {
+            header.jumpToData(stream)
+            val r = MasterElementDeclarationReader(declaration, header, stream)
             try {
-                r.block()
+                return r.block()
             } finally {
                 r.close()
                 childrenCache = r.children

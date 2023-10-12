@@ -9,7 +9,9 @@ import saisei.io.stream.readAsInt
 import saisei.io.stream.readShort
 
 public suspend fun BinaryElement.readBlock(stream: SeekableReadStream): MatroskaBlock {
-    require(stream.position == header.dataPosition)
+    require(stream.position == header.dataPosition) {
+        "Attempting to read MKV block @ ${header.dataPosition} while stream is @ ${stream.position}"
+    }
 
     val trackNumber = stream.readVariableEBMLInteger()
     val timecode = stream.readShort().toLong()

@@ -13,8 +13,6 @@ import saisei.io.format.ebml.matches
 import saisei.io.memory.ByteMemory
 import saisei.io.stream.SeekableReadStream
 
-// TODO: Discard Padding
-
 /**
  *
  */
@@ -25,8 +23,8 @@ public data class MatroskaFrameReader(
 ) : Closeable, Resetable {
     private var state: State = State.Idle
 
+    private var cluster: MasterElementReader? = null
     private val buffer = ByteMemory.Allocator.allocate(8192)
-    private var cluster: MasterElementReader = segment.firstCluster.reader()
     private var clusterTimecode: Long = 0
 
     /**
@@ -37,7 +35,7 @@ public data class MatroskaFrameReader(
 
     override fun reset() {
         state = State.Idle
-        cluster = segment.firstCluster.reader()
+        cluster = null
         clusterTimecode = 0
     }
 
@@ -58,11 +56,15 @@ public data class MatroskaFrameReader(
         }
 
         return try {
+            if (cluster == null) {
+                cluster = segment.firstCluster.reader(stream)
+            }
+
             /* attempt to read a block. */
             if (!state.hasRemaining) while (true) {
-                if (!cluster.hasRemaining) readCluster()
+                if (cluster?.hasRemaining != true) readCluster()
 
-                val el = cluster.readNextChild()
+                val el = cluster?.readNextChild()
                     ?: continue
 
                 when {
@@ -82,13 +84,10 @@ public data class MatroskaFrameReader(
                         state = State.BlockGroup(el.into(Segment.Cluster.BlockGroup), stream)
                         break
                     }
-
-                    else -> cluster.skipLastChild()
                 }
             }
 
             val frame = state.readFrame(buffer)
-//            frame.copy(timecode = file.convertTimecodeToDuration(frame.timecode + clusterTimecode).inWholeMilliseconds)
             frame.copy(timecode = frame.timecode + clusterTimecode)
         } catch (ex: EOFException) {
             state = State.Exhausted

@@ -5,7 +5,7 @@ import saisei.io.slice.impl.ByteMemorySlice
 import saisei.io.slice.impl.ShortMemorySlice
 
 public interface CodecChunkDecoder : Closeable {
-    override fun close() {}
+    public fun decode(data: ByteMemorySlice, pcm: ShortMemorySlice): ShortMemorySlice
 
-    public fun decode(encoded: ByteMemorySlice, pcm: ShortMemorySlice): ShortMemorySlice
+    override fun close() {}
 }

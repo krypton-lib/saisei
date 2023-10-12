@@ -1,6 +1,5 @@
 package saisei.codec.opus
 
-import saisei.io.memory.ByteMemory
 import saisei.io.slice.ByteSlice
 import saisei.io.slice.impl.ByteArraySlice
 import saisei.io.slice.impl.ByteMemorySlice
@@ -36,20 +35,16 @@ public sealed class OpusPacket {
     protected abstract fun asSlice(): ByteSlice
 
     public class Native(
-        public val data: ByteMemory,
-        public val offset: Long,
-        public val length: Long,
+        public val data: ByteMemorySlice,
         override val sampleRate: Int,
     ) : OpusPacket() {
-        override fun asSlice(): ByteSlice = ByteMemorySlice(data, offset, length)
+        override fun asSlice(): ByteSlice = data
     }
 
     public class Array(
-        public val data: ByteArray,
-        public val offset: Int,
-        public val length: Int,
+        public val data: ByteArraySlice,
         override val sampleRate: Int,
     ) : OpusPacket() {
-        override fun asSlice(): ByteSlice = ByteArraySlice(data, offset, length)
+        override fun asSlice(): ByteSlice = data
     }
 }

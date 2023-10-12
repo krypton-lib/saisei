@@ -6,15 +6,16 @@ import saisei.io.format.ebml.element.MasterElement
 import saisei.io.format.ebml.element.child
 import saisei.io.format.ebml.element.children
 import saisei.io.format.ebml.mustBe
+import kotlin.time.Duration
 
 /**
  *
  */
 public data class MatroskaCuePoint(
     /**
-     * Timecode using the file timescale
+     * The timecode of the Cue Point, this [Duration] has already been adjusted using the file's timestamp scale.
      */
-    val timecode: Long,
+    val timecode: Duration,
     /**
      * Contain positions for different tracks corresponding to the timestamp.
      */
@@ -49,11 +50,11 @@ public data class MatroskaCuePoint(
         /**
          *
          */
-        public suspend fun MasterElement.readMatroskaCuePoint(): MatroskaCuePoint {
+        public suspend fun MasterElement.readMatroskaCuePoint(timestampScale: Long): MatroskaCuePoint {
             this mustBe Segment.Cues.CuePoint
 
             return MatroskaCuePoint(
-                child(Segment.Cues.CuePoint.CueTime).read(),
+                ticksToDuration(timestampScale, child(Segment.Cues.CuePoint.CueTime).read()),
                 children(Segment.Cues.CuePoint.CueTrackPositions).map { it.readMatroskaCuePointOffset() }
             )
         }

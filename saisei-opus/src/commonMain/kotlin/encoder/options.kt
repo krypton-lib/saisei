@@ -13,7 +13,7 @@ import kotlinx.serialization.encoding.Encoder
  * The encoder's bitrate, supports 500 to 512000 bits-per-second.
  */
 @Serializable(with = OpusBitrate.Companion::class)
-public sealed class OpusBitrate(value: Int) : OpusOption(BITRATE, value) {
+public sealed class OpusBitrate(value: Int) : OpusEncoderOption(BITRATE, value) {
     public companion object : KSerializer<OpusBitrate> {
         override val descriptor: SerialDescriptor =
             PrimitiveSerialDescriptor("OpusBitrate", PrimitiveKind.INT)
@@ -70,7 +70,7 @@ public sealed class OpusBitrate(value: Int) : OpusOption(BITRATE, value) {
  * @param value number in the range 0-10, with 10 representing the highest complexity.
  */
 @Serializable(with = OpusComplexity.Serializer::class)
-public class OpusComplexity(value: Int) : OpusOption(COMPLEXITY, value) {
+public class OpusComplexity(value: Int) : OpusEncoderOption(COMPLEXITY, value) {
     public object Serializer : KSerializer<OpusComplexity> {
         override val descriptor: SerialDescriptor =
             PrimitiveSerialDescriptor("OpusComplexity", PrimitiveKind.INT)
@@ -100,7 +100,7 @@ public class OpusComplexity(value: Int) : OpusOption(COMPLEXITY, value) {
  * The type of signal being encoded.
  */
 @Serializable(with = OpusSignal.Serializer::class)
-public sealed class OpusSignal(value: Int) : OpusOption(SIGNAL, value) {
+public sealed class OpusSignal(value: Int) : OpusEncoderOption(SIGNAL, value) {
     public companion object {
         public fun values(): Array<OpusSignal> = arrayOf(Voice, Music)
 

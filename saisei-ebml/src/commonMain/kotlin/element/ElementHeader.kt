@@ -33,21 +33,22 @@ public data class ElementHeader(
     val size: Long get() = headerSize + dataSize
 
     public suspend fun jumpTo(stream: SeekableReadStream) {
-        stream.seek(position)
+        if (stream.position != position) stream.seek(position)
     }
 
     public suspend fun jumpToData(stream: SeekableReadStream) {
-        stream.seek(dataPosition)
+        if (stream.position != dataPosition) stream.seek(dataPosition)
     }
 
     public suspend fun skip(stream: SeekableReadStream) {
-        stream.discardFully(calculateRemaining(stream.position))
+        val remaining = calculateRemaining(stream.position)
+        if (remaining > 0) stream.discardFully(remaining)
     }
 
     /**
      *
      */
-    public fun calculateRemaining(currentPos: Long): Long = position + headerSize + dataSize - currentPos
+    public fun calculateRemaining(currentPos: Long): Long = position + size - currentPos
 
     public companion object {
         public suspend fun read(stream: SeekableReadStream): ElementHeader {

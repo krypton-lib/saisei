@@ -8,8 +8,8 @@ public interface CodecChunkEncoder : Closeable {
     override fun close() {}
 
     /**
-     * @param dec The PCM encoded input.
-     * @param enc An output for the encoded PCM.
+     * @param pcm  The PCM encoded input.
+     * @param data An output for the encoded PCM.
      */
-    public fun encode(dec: ShortMemorySlice, enc: ByteMemorySlice): ByteMemorySlice
+    public fun encode(pcm: ShortMemorySlice, data: ByteMemorySlice): ByteMemorySlice
 }

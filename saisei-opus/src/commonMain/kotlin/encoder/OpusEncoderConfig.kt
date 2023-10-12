@@ -9,7 +9,7 @@ import kotlin.contracts.contract
  */
 public data class OpusEncoderConfig(
     val application: OpusApplication,
-    val options: Set<OpusOption>,
+    val options: Set<OpusEncoderOption>,
 ) {
     public companion object {
         /**
@@ -62,7 +62,7 @@ public data class OpusEncoderConfig(
         /**
          *
          */
-        public val options: MutableSet<OpusOption> = mutableSetOf()
+        public val options: MutableSet<OpusEncoderOption> = mutableSetOf()
 
         /**
          * The opus application.
@@ -93,7 +93,7 @@ public data class OpusEncoderConfig(
             options += value
         }
 
-        public operator fun OpusOption.unaryPlus() {
+        public operator fun OpusEncoderOption.unaryPlus() {
             options += this
         }
 
