@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     `maven-publish`
@@ -21,16 +22,17 @@ kotlin {
         }
     }
 
-//    macosArm64()
-//
-//    macosX64()
-
     mingwX64()
 
     linuxX64()
 
     jvm {
         jvmToolchain(19)
+
+        compilations.forEach {
+            it.compilerOptions.options.jvmTarget = JvmTarget.JVM_19
+        }
+
         testRuns.named("test") {
             executionTask.configure {
                 useJUnitPlatform()
