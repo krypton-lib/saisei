@@ -8,5 +8,9 @@ package saisei.io.exception
 public actual class EOFException : IOException {
     public actual constructor() : super()
 
-    public actual constructor(message: String) : super(message)
+    public actual constructor(cause: Throwable?) : super(cause)
+
+    public actual constructor(message: String?) : super(message)
+
+    public actual constructor(message: String?, cause: Throwable?) : super(message, cause)
 }

@@ -6,7 +6,9 @@ package saisei.io.exception
 public expect open class IOException : Exception {
     public constructor()
 
-    public constructor(message: String)
+    public constructor(cause: Throwable?)
 
-    public constructor(message: String, cause: Throwable?)
+    public constructor(message: String?)
+
+    public constructor(message: String?, cause: Throwable?)
 }
