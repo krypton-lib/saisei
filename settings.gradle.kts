@@ -2,20 +2,21 @@ enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 rootProject.name = "saisei-root"
 
-// ebml
-include(":saisei-mkv")
+// container formats
+include(":saisei-container-mkv")
+include(":saisei-container-wav")
 
-include(":saisei-ebml:codegen")
-include(":saisei-ebml")
+// binary formats
+include(":saisei-format-ebml", ":saisei-format-ebml:codegen")
+include(":saisei-format-riff")
 
-// riff
-include(":saisei-wav:riff")
-include(":saisei-wav")
+// codecs
+include(":saisei-codec-mp3")
+include(":saisei-codec-aac")
+include(":saisei-codec-opus")
+include(":saisei-codec-vorbis")
 
-// opus
-include(":saisei-opus")
-
-//
+// core libraries
 include(":saisei-io")
 include(":saisei")
 

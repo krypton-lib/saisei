@@ -37,7 +37,7 @@ public class OpusEncoder(
         pcm: ShortMemorySlice,
         data: ByteMemorySlice,
     ): ByteMemorySlice {
-        val result = inner.encode(pcm, parameters.chunkSampleCount, data)
+        val result = inner.encode(pcm, parameters.frameSampleCount, data)
         if (result < 0) {
             val code = OpusResultCode.valueOf(result)
             throw OpusException(code.value, "Failed to encode pcm to opus: $code")

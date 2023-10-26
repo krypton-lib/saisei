@@ -12,9 +12,9 @@ public data class CodecParameters(
      */
     val channelCount: Int,
     /**
-     * The number of samples.
+     * The number of samples in a single frame.
      */
-    val chunkSampleCount: Int,
+    val frameSampleCount: Int,
     /**
      * The type of codec.
      */
@@ -23,5 +23,5 @@ public data class CodecParameters(
     /**
      *
      */
-    val totalSampleCount: Int get() = chunkSampleCount * channelCount
+    val totalSampleCount: Int get() = frameSampleCount * channelCount
 }

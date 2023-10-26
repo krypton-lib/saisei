@@ -9,7 +9,7 @@ repositories {
 }
 
 dependencies {
-    implementation(projects.saiseiEbml)
+    implementation(projects.saiseiFormatEbml)
 
     // code-generation
     implementation("org.jsoup:jsoup:1.16.1")
