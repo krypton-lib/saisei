@@ -16,6 +16,8 @@ include(":saisei-codec-aac")
 include(":saisei-codec-opus")
 include(":saisei-codec-vorbis")
 
+include(":saisei-codecs-lavaplayer") // Codec implementations for the JVM backed by lavaplayer natives.
+
 // core libraries
 include(":saisei-io")
 include(":saisei")
