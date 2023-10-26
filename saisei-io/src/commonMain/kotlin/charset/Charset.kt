@@ -6,6 +6,8 @@ import saisei.io.slice.ByteSlice
 import saisei.io.slice.impl.ByteArraySlice
 import saisei.io.slice.impl.ByteMemorySlice
 
+// TODO: charsets should support reading & writing from byte cursors
+
 public interface Charset {
     /**
      * The name of this charset.
