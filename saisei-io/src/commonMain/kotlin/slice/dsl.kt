@@ -2,11 +2,16 @@ package saisei.io.slice
 
 import naibu.ext.contains
 import naibu.ext.size
+import naibu.ext.toIntRange
+import naibu.math.toIntSafe
 import saisei.io.memory.ByteMemory
 import saisei.io.memory.ShortMemory
 import saisei.io.slice.impl.asSlice
 
 public val EmptyShortArray: ShortArray = ShortArray(0)
+
+public inline val Slice<*>.size32: Int get() = size.toIntSafe()
+public inline val Slice<*>.range32: IntRange get() = range.toIntRange()
 
 public operator fun <T> Slice<T>.get(idx: Int): T = get(idx.toLong())
 
