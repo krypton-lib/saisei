@@ -26,10 +26,17 @@ public sealed interface MatroskaCues {
          * @param trackNumber The track number
          * @param timecode    The timecode
          */
-        public fun findCluster(trackNumber: Long, timecode: Duration): Long? = value.find { it.timecode > timecode }
-            ?.offsets
-            ?.find { it.trackNumber == trackNumber }
-            ?.trackClusterOffset
+        public fun findCluster(trackNumber: Long, timecode: Duration): Long? {
+            val idx = value
+                .indexOfFirst { it.timecode > timecode }
+                .takeUnless { it == -1 }
+                ?: return null
+
+            return value.elementAtOrNull(idx - 1)
+                ?.offsets
+                ?.find { it.trackNumber == trackNumber }
+                ?.trackClusterOffset
+        }
     }
 
     /**

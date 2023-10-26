@@ -95,6 +95,7 @@ public data class MatroskaFrameReader(
         }
     }
 
+    @OptIn(ExperimentalSaiseiApi::class)
     public suspend fun readCluster() {
         /* if we've exhausted the current cluster then read the next one. */
         while (true) {
@@ -129,6 +130,7 @@ public data class MatroskaFrameReader(
             override suspend fun readFrame(into: ByteMemory): MatroskaFrame = TODO()
         }
 
+        @OptIn(ExperimentalSaiseiApi::class)
         data class BlockGroup(val element: MasterElement, val stream: SeekableReadStream) : State {
             private val reader = element.reader()
             private var block: Block? = null
@@ -137,7 +139,7 @@ public data class MatroskaFrameReader(
                 get() = reader.remaining > 0
 
             override suspend fun readFrame(into: ByteMemory): MatroskaFrame {
-                if (block?.hasRemaining != false) while (hasRemaining) {
+                if (block?.hasRemaining != true) while (hasRemaining) {
                     val el = reader.readNextChild()
                         ?: continue
 

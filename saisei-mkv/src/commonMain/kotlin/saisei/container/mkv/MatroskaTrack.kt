@@ -1,6 +1,7 @@
 package saisei.container.mkv
 
 import naibu.math.toIntSafe
+import saisei.annotation.InternalSaiseiApi
 import saisei.container.mkv.element.Segment
 import saisei.io.format.ebml.element.*
 import saisei.io.format.ebml.mustBe
@@ -29,6 +30,11 @@ public data class MatroskaTrack(
      * Audio Settings
      */
     val audio: Audio? = null,
+    /**
+     * The element that was read.
+     */
+    @property:InternalSaiseiApi
+    val element: MasterElement,
 ) {
     public data class Codec(
         /**
@@ -44,6 +50,10 @@ public data class MatroskaTrack(
          * are in the same Cluster.
          */
         val delay: Duration,
+        /**
+         *
+         */
+        val seekPreRoll: Duration,
         /**
          * Private data only known to the codec.
          */
@@ -74,7 +84,6 @@ public data class MatroskaTrack(
          * TODO:
          * Since Tracks have a decent number of fields maybe it would be better to read only the ones we need?
          */
-
         public suspend fun MasterElement.readMatroskaTracks(): List<MatroskaTrack> {
             this mustBe Segment.Tracks
 
@@ -88,7 +97,9 @@ public data class MatroskaTrack(
 
             val codec = Codec(
                 child(Segment.Tracks.TrackEntry.CodecID).read(),
-                child(Segment.Tracks.TrackEntry.CodecDelay).read().nanoseconds,
+                // CodecDelay is a mandatory element but FFMPEG doesn't write it for some reason
+                childOrNull(Segment.Tracks.TrackEntry.CodecDelay)?.read()?.nanoseconds ?: Duration.ZERO,
+                childOrNull(Segment.Tracks.TrackEntry.SeekPreRoll)?.read()?.nanoseconds ?: Duration.ZERO,
                 childOrNull(Segment.Tracks.TrackEntry.CodecPrivate)?.read()
             )
 
@@ -106,7 +117,8 @@ public data class MatroskaTrack(
                 child(Segment.Tracks.TrackEntry.TrackNumber).read(),
                 child(Segment.Tracks.TrackEntry.TrackType).read(),
                 codec,
-                audio
+                audio,
+                this
             )
         }
     }
