@@ -5,12 +5,12 @@ import saisei.codec.CodecChunkDecoder
 import saisei.codec.CodecParameters
 import saisei.codec.opus.OpusException
 import saisei.codec.opus.OpusResultCode
-import saisei.codec.opus.opus
+import saisei.codec.opus.getOpusLibrary
 import saisei.io.slice.impl.ByteMemorySlice
 import saisei.io.slice.impl.ShortMemorySlice
 
-public class OpusDecoder(public val parameters: CodecParameters) : Closeable, CodecChunkDecoder {
-    private val inner = opus.decoder_create(parameters.sampleRate, parameters.channelCount)
+public class OpusDecoder(private val parameters: CodecParameters) : Closeable, CodecChunkDecoder {
+    private val inner = getOpusLibrary().createDecoder(parameters.sampleRate, parameters.channelCount)
 
     /**
      * Encodes the provided [pcm] and writes it to [data]
@@ -30,6 +30,6 @@ public class OpusDecoder(public val parameters: CodecParameters) : Closeable, Co
     }
 
     override fun close() {
-        inner.destroy()
+        inner.close()
     }
 }

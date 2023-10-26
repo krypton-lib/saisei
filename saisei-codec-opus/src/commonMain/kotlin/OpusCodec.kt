@@ -11,8 +11,7 @@ import saisei.io.slice.ByteSlice
 
 public data class OpusCodec(
     val encoderConfig: OpusEncoderConfig = OpusEncoderConfig.Default,
-) : Codec("OPUS", true) {
-
+) : Codec("opus", true) {
     override fun getSampleCount(params: CodecParameters, packet: ByteSlice): Int =
         OpusPacketTools.getPacketSampleCount(params.sampleRate, packet)
 

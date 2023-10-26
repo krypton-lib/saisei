@@ -7,18 +7,20 @@ import saisei.io.slice.impl.ByteMemorySlice
 import saisei.io.slice.impl.ShortMemorySlice
 import saisei.io.slice.impl.asPointer
 
+internal actual fun getOpusLibrary(): NativeOpusLibrary = Opus
+
 @OptIn(ExperimentalForeignApi::class)
-internal actual object opus {
-    actual fun decoder_create(Fs: Int, channels: Int): opus_decoder {
+private object Opus : NativeOpusLibrary {
+    override fun createDecoder(sampleRate: Int, channels: Int): NativeOpusDecoder {
         val ptr = memScoped {
             val error = allocArray<IntVar>(1)
-            val enc = opus_decoder_create(Fs, channels, error)
+            val enc = opus_decoder_create(sampleRate, channels, error)
             val code = OpusResultCode.valueOf(error[0])
             if (code != OpusResultCode.Ok) throw OpusException(code.value, "Failed to create encoder $code")
             enc
         }
 
-        return object : opus_decoder {
+        return object : NativeOpusDecoder {
             override fun decode(data: ByteMemorySlice, pcm: ShortMemorySlice): Int =
                 opus_decode(
                     ptr,
@@ -29,36 +31,38 @@ internal actual object opus {
                     0
                 )
 
-            override fun destroy(): Unit = opus_decoder_destroy(ptr)
+            override fun close(): Unit = opus_decoder_destroy(ptr)
         }
     }
 
-    actual fun encoder_create(
-        Fs: Int,
+    override fun createEncoder(
+        sampleRate: Int,
         channels: Int,
         application: Int,
-    ): opus_encoder {
+    ): NativeOpusEncoder {
         val enc = memScoped {
             val error = allocArray<IntVar>(1)
-            val enc = opus_encoder_create(Fs, channels, application, error)
+            val enc = opus_encoder_create(sampleRate, channels, application, error)
             val code = OpusResultCode.valueOf(error[0])
             if (code != OpusResultCode.Ok) throw OpusException(code.value, "Failed to create encoder $code")
             enc
         }
 
-        return object : opus_encoder {
+        return object : NativeOpusEncoder {
+            override val supportsCTL: Boolean get() = true
+
             override fun ctl(request: Int, value: Int): Int = opus_encoder_ctl(enc, request, value)
 
-            override fun encode(pcm: ShortMemorySlice, frame_size: Int, data: ByteMemorySlice): Int =
+            override fun encode(pcm: ShortMemorySlice, frameSize: Int, data: ByteMemorySlice): Int =
                 opus_encode(
                     enc,
                     pcm.asPointer,
-                    frame_size,
+                    frameSize,
                     data.asPointer?.reinterpret(),
                     data.size.toIntSafe()
                 )
 
-            override fun destroy() = opus_encoder_destroy(enc)
+            override fun close() = opus_encoder_destroy(enc)
         }
     }
 }

@@ -5,15 +5,16 @@ import saisei.codec.CodecChunkEncoder
 import saisei.codec.CodecParameters
 import saisei.codec.opus.OpusException
 import saisei.codec.opus.OpusResultCode
-import saisei.codec.opus.opus
+import saisei.codec.opus.getOpusLibrary
 import saisei.io.slice.impl.ByteMemorySlice
 import saisei.io.slice.impl.ShortMemorySlice
 
 public class OpusEncoder(
-    public val parameters: CodecParameters,
+    private val parameters: CodecParameters,
     config: OpusEncoderConfig,
 ) : Closeable, CodecChunkEncoder {
-    private val inner = opus.encoder_create(parameters.sampleRate, parameters.channelCount, config.application.value)
+    private val inner =
+        getOpusLibrary().createEncoder(parameters.sampleRate, parameters.channelCount, config.application.value)
 
     init {
         // initialize with the given config.
@@ -47,6 +48,6 @@ public class OpusEncoder(
     }
 
     override fun close() {
-        inner.destroy()
+        inner.close()
     }
 }
