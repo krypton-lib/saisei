@@ -7,7 +7,7 @@ public abstract class Codec(public val name: String, public val isAudio: Boolean
     /**
      * The ID of this codec.
      */
-    public val id: String get() = "${if (isAudio) "A" else "V"}_$name"
+    public val id: String get() = "${if (isAudio) "A" else "V"}_${name.uppercase()}"
 
     /**
      *
