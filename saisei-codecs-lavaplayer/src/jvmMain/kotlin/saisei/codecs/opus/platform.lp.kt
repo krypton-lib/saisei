@@ -50,20 +50,20 @@ internal class LavaplayerNativeOpusLibrary : NativeOpusLibrary {
             )
 
             checkNotReleased()
-            return lib.encode(ins!!, pcm.resizedBuffer(), pcm.size32, data.resizedBuffer(), data.size32)
+            return lib.encode(ins!!, pcm.resizedBuffer(), frameSize, data.resizedBuffer(), data.size32)
         }
     }
 
     class Dec(
         sampleRate: Int,
-        channels: Int,
+        private val channels: Int,
     ) : NativeOpusDecoder, NativeResourceHolder() {
         private val lib = OpusDecoderLibrary.INSTANCE
         private val ins = lib.create(sampleRate, channels)
 
         override fun decode(data: ByteMemorySlice, pcm: ShortMemorySlice): Int {
             checkNotReleased()
-            return lib.decode(ins, data.resizedBuffer(), data.size32, pcm.resizedBuffer(), pcm.size32)
+            return lib.decode(ins, data.resizedBuffer(), data.size32, pcm.resizedBuffer(), pcm.size32 / channels)
         }
 
         override fun freeResources() {

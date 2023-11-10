@@ -21,7 +21,7 @@ private val Project.tag
         ?.single()
 
 val Project.libraryVersion
-    get() = "1.0-rc.3" /*?: tag ?: run {
+    get() = "1.0-rc.4" /*?: tag ?: run {
         val snapshotPrefix = when (val branch = git("branch", "--show-current")) {
             "master" -> providers
                 .gradleProperty("nextPlannedVersion")
